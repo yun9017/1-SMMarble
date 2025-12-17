@@ -14,18 +14,18 @@
 
 
 
-#define GRADE_A+        0
+#define GRADE_AP        0
 #define GRADE_A0        1
-#define GRADE_A-        2
-#define GRADE_B+        3
+#define GRADE_AM        2
+#define GRADE_BP        3
 #define GRADE_B0        4
-#define GRADE_B-        5
-#define GRADE_C+        6
+#define GRADE_BM        5
+#define GRADE_CP        6
 #define GRADE_C0        7
-#define GRADE_C-        8
-#define GRADE_D+        9
+#define GRADE_CM        8
+#define GRADE_DP        9
 #define GRADE_D0        10
-#define GRADE_D-        11
+#define GRADE_DM        11
 #define GRADE_F         12
 
 static char smmObj_nodeName[MAX_NODETYPE][MAX_CHARNAME] = {
