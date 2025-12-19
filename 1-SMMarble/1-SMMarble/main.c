@@ -28,6 +28,8 @@ typedef struct{
     int credit;
     int energy;
     int flag_graduated;
+    int flag_experiment; // 실험 중인지 확인
+    int experiment_target; // 실험 성공 여부 판단 기준값
 } smm_player_t;
 
 smm_player_t *smm_players;
@@ -90,10 +92,12 @@ void goForward(int player, int step) //make player go "step" steps on the board 
 void printPlayerStatus(void)
 {
     int i;
+    void *ptr;
+    
     for(i=0;i<smm_player_nr;i++)
     {
         printf("%s - position:%i(%s), credit:%i, energy:%i\n",
-               smm_players[i].name, smm_players[i].pos, smmObj_getObjectName(smm_players[i].pos),smm_players[i].credit, smm_players[i].energy);
+               smm_players[i].name, smm_players[i].pos, smmObj_getObjectName(ptr),smm_players[i].credit, smm_players[i].energy);
     }
 }
 
@@ -101,7 +105,7 @@ void generatePlayers(int n, int initEnergy)
 {
     int i;
     
-    smm_players = (smm_players_t*)malloc(n*sizeof(smm_players_t));
+    smm_players = (smm_player_t*)malloc(n*sizeof(smm_player_t));
     
     for(i=0;i<n;i++)
     {
@@ -152,7 +156,8 @@ void actionNode(int player)
     switch(type)
     {
         case SMMNODE_TYPE_LECTURE:
-        if (findGrade(,) == NULL)
+            // 플레이어가 이미 강의를 수강했는지 확인
+            if (findGrade(player , smmObj_getObjectName(ptr)) == NULL)
         {
             smm_players[player].credit += credit;
             smm_players[player].energy -= energy;
@@ -169,6 +174,16 @@ void actionNode(int player)
             break;
             
         case SMMNODE_TYPE_LABORATORY:
+            if (smm_players[player].flag_experiment == 1) // 실험 중 상태일 때만 주사위 굴려 이동 시도
+            {
+                smm_players[player].energy -= energy; // 실험 시도할 때마다 에너지 소모, 음수 가능
+                
+                int dice = (rand() % MAX_DIE) + 1;
+                if (dice >= smm_players[player].experiment_target)
+                {
+                    smm_players[player].flag_experiment = 0; // 성공 했을 때 실험 종료 상태로 전환
+                }
+            }  // 실패 시 이동 못하고 머무름
             break;
             
         case SMMNODE_TYPE_HOME:
@@ -180,6 +195,19 @@ void actionNode(int player)
             break;
             
         case SMMNODE_TYPE_GOTOLAB:
+            smm_players[player].flag_experiment = 1; // 실험 중 상태로 전환
+            
+            smm_players[player].experiment_target = (rand() % MAX_DIE) + 1; // 실험 성공 기준값은 주사위 범위 내에서 랜덤 지정됨
+            
+            for (int i = 0; i < smm_board_nr; i++)
+            {
+                void *nodePtr = smmdb_getData(LISTNO_NODE, i); // 실험실 위치로 이동하도록
+                if (smmObj_getNodeType(nodePtr) == SMMNODE_TYPE_LABORATORY)
+                {
+                    smm_players[player].pos = i;
+                    break;
+                }
+            }
             break;
             
         case SMMNODE_TYPE_FOODCHANCE:

@@ -38,7 +38,7 @@ static char smmObj_nodeName[MAX_NODETYPE][MAX_CHARNAME] = {
     "festival"
 };
 
-static char smmObj_gradeName[MAX_GRADE][MAX_CHARNAME] = {
+static char smmObj_gradeName[SMMNODE_MAX_GRADE][MAX_CHARNAME] = {
     "A+",
     "A0",
     "A-",
@@ -92,13 +92,13 @@ char* smmObj_getObjectName(void *ptr)
     return (objPtr->name);
 }
 
-int smmObj_getObjectType(void *ptr)
+int smmObj_getNodeType(void *ptr)
 {
     smmObj_object_t* objPtr = (smmObj_object_t*)ptr;
     return (objPtr->type);
 }
 
-int smmObj_getObjectCredit(void *ptr)
+int smmObj_getNodeCredit(void *ptr)
 {
     smmObj_object_t* objPtr = (smmObj_object_t*)ptr;
     return (objPtr->credit);
