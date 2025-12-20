@@ -40,8 +40,38 @@ void printPlayerStatus(void); //print all player status at the beginning of each
 //function prototypes
 #if 0
 void printGrades(int player); //print grade history of the player
+{
+    int size = smmdb_len(LISTNO_OFFSET_GRADE + player);
+    int i;
+    
+    printf()
+    for (i=0; i<size; i++)
+    {
+        void* ptr = smmdb_getData(LISTNO_OFFSET_GRADE + player, i);
+        char* name = smmObj_getObjectName(ptr);
+        int grade = smmObj_getObjectGrade(ptr);
+        
+    }
+}
+
 float calcAverageGrade(int player); //calculate average grade of the player
-smmGrade_e takeLecture(int player, char *lectureName, int credit); //take the lecture (insert a grade of the player)
+{
+    int i;
+    int size = smmdb_len(LISTNO_OFFSET_GRADE + player);
+    int total = 0;
+    
+    for (i=0; i < size; i++)
+    {
+        void* ptr = smmdb_getData(LISTNO_OFFSET_GRADE + player, i);
+        total += smmObj_getObjectGrade(ptr); // 성적 모두 더하기
+    }
+    return (float)total / size; // (총점 / 과목 수) 계산해 실수형으로 변환
+}
+
+smmGrade_e takeLecture(int player, char *lectureName, int credit);//take the lecture (insert a grade of the player)
+{
+    smmGrade_e grade = (smmGrade_e)(rand() % 9); // 0-8 사이 랜덤 성적 생성
+}
 void printGrades(int player); //print all the grade history of the player
 #endif
 
@@ -96,6 +126,8 @@ void printPlayerStatus(void)
     
     for(i=0;i<smm_player_nr;i++)
     {
+        ptr = smmdb_getData(LISTNO_NODE, smm_players[i].pos); // 현재 플레이어의 위치에 있는 노드 가져오기
+        
         printf("%s - position:%i(%s), credit:%i, energy:%i\n",
                smm_players[i].name, smm_players[i].pos, smmObj_getObjectName(ptr),smm_players[i].credit, smm_players[i].energy);
     }
@@ -135,7 +167,7 @@ int rolldie(int player)
         printGrades(player);
 #endif
     
-    return (rand()%MAX_DIE + 1);
+    return (rand() % MAX_DIE + 1);
 }
 
 
@@ -211,9 +243,25 @@ void actionNode(int player)
             break;
             
         case SMMNODE_TYPE_FOODCHANCE:
+            int food_count = smmdb_len(LISTNO_FOODCARD); // 음식카드 총 개수 파악
+            
+            if (food_count > 0)
+            {
+                int rand_index = rand() % food_count;
+                void *foodObj = smmdb_getData(LISTNO_FOODCARD, rand_index); // 랜덤 인덱스 선택과 해당 음식 선택
+                
+                smm_players[player].energy += smmObj_getObjectEnergy(foodObj); // 명시된 보충 에너지를 현재 에너지에 더함
+            }
             break;
             
         case SMMNODE_TYPE_FESTIVAL:
+            int fest_count = smmdb_len(LISTNO_FESTCARD);
+            
+            if (fest_count > 0)
+            {
+                int rand_index = rand() % fest_count;
+                void *festObj = smmdb_getData(LISTNO_FESTCARD, rand_index);
+            }
             break;
         //case lecture:
         default:
@@ -260,7 +308,6 @@ int main(int argc, const char * argv[]) {
     printf("Total number of board nodes : %i\n", smm_board_nr);
     
     
-#if 0
     //2. food card config
     if ((fp = fopen(FOODFILEPATH,"r")) == NULL)
     {
@@ -269,14 +316,17 @@ int main(int argc, const char * argv[]) {
     }
     
     printf("\n\nReading food card component......\n");
-    while () //read a food parameter set
+    while (fscanf(fp, "%s %i", name, &energy) == 2) //read a food parameter set (이름, 에너지 수치)
     {
         //store the parameter set
+        void* ptr;
+        printf("%s %i\n", name, energy);
+        ptr = smmObj_genObject(name, SMMNODE_OBJTYPE_FOOD, 0, 0, energy, 0);
+        smm_food_nr = smmdb_addTail(LISTNO_FOODCARD, ptr);
     }
     fclose(fp);
-    printf("Total number of food cards : %i\n", food_nr);
+    printf("Total number of food cards : %i\n", smm_food_nr);
 
-    
     
     //3. festival card config 
     if ((fp = fopen(FESTFILEPATH,"r")) == NULL)
@@ -286,14 +336,17 @@ int main(int argc, const char * argv[]) {
     }
     
     printf("\n\nReading festival card component......\n");
-    while () //read a festival card string
+    while (fscanf(fp, "%s", name) == 1) //read a festival card string (미션 내용 문자열)
     {
         //store the parameter set
+        void* ptr;
+        printf("%s\n", name);
+        ptr = smmObj_genObject(name, SMMNODE_OBJTYPE_FEST, 0, 0, 0, 0);
+        smm_festival_nr = smmdb_addTail(LISTNO_FESTCARD, ptr);
     }
     fclose(fp);
-    printf("Total number of festival cards : %i\n", festival_nr);
+    printf("Total number of festival cards : %i\n", smm_festival_nr);
     
-#endif
     
     //2. Player configuration ---------------------------------------------------------------------------------
     

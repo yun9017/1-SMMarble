@@ -23,10 +23,7 @@
 #define GRADE_CP        6
 #define GRADE_C0        7
 #define GRADE_CM        8
-#define GRADE_DP        9
-#define GRADE_D0        10
-#define GRADE_DM        11
-#define GRADE_F         12
+
 
 static char smmObj_nodeName[MAX_NODETYPE][MAX_CHARNAME] = {
     "lecture",
@@ -47,14 +44,9 @@ static char smmObj_gradeName[SMMNODE_MAX_GRADE][MAX_CHARNAME] = {
     "B-",
     "C+",
     "C0",
-    "C-",
-    "D+",
-    "D0",
-    "D-",
-    "F"
+    "C-"
 };
 //structure type definition
-
 typedef struct{
     char name [MAX_CHARNAME];
     int objType;
@@ -113,6 +105,12 @@ int smmObj_getObjectEnergy(void *ptr)
 char* smmObj_getTypeName(int node_type)
 {
     return (smmObj_nodeName[node_type]);
+}
+
+int smmObj_getObjectGrade(void *ptr)
+{
+    smmObj_object_t* objPtr = (smmObj_object_t*)ptr;
+    return (objPtr->grade);
 }
 
 #if 0
