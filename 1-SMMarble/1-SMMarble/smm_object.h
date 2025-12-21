@@ -42,6 +42,20 @@
     C-
 */
 
+typedef enum // 열거형
+{
+    GRADE_AP,
+    GRADE_A0,
+    GRADE_AM,
+    GRADE_BP,
+    GRADE_B0,
+    GRADE_BM,
+    GRADE_CP,
+    GRADE_C0,
+    GRADE_CM
+} smmGrade_e;
+
+
 #define SMMNODE_MAX_GRADE       13
 
 
@@ -52,6 +66,9 @@ int smmObj_getNodeType(void *ptr);
 int smmObj_getObjectEnergy(void *ptr);
 char* smmObj_getTypeName(int node_type);
 int smmObj_getNodeCredit(void *ptr);
+int smmObj_getObjectGrade(void *ptr);
+
+char* smmObj_getGradeName(smmGrade_e grade);
 //member retrieving
 
 

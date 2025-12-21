@@ -36,25 +36,27 @@ smm_player_t *smm_players;
 
 void generatePlayers(int n, int initEnergy); //generate a new player
 void printPlayerStatus(void); //print all player status at the beginning of each turn
+void graduationResult(void);
+
 
 //function prototypes
-#if 0
-void printGrades(int player); //print grade history of the player
+void printGrades(int player) //print grade history of the player
 {
     int size = smmdb_len(LISTNO_OFFSET_GRADE + player);
     int i;
     
-    printf()
     for (i=0; i<size; i++)
     {
         void* ptr = smmdb_getData(LISTNO_OFFSET_GRADE + player, i);
         char* name = smmObj_getObjectName(ptr);
         int grade = smmObj_getObjectGrade(ptr);
         
+        printf("%s : %d\n", name, grade);
     }
 }
 
-float calcAverageGrade(int player); //calculate average grade of the player
+
+float calcAverageGrade(int player) //calculate average grade of the player
 {
     int i;
     int size = smmdb_len(LISTNO_OFFSET_GRADE + player);
@@ -68,12 +70,21 @@ float calcAverageGrade(int player); //calculate average grade of the player
     return (float)total / size; // (총점 / 과목 수) 계산해 실수형으로 변환
 }
 
-smmGrade_e takeLecture(int player, char *lectureName, int credit);//take the lecture (insert a grade of the player)
+smmGrade_e takeLecture(int player, char *lectureName, int credit) //take the lecture (insert a grade of the player)
 {
-    smmGrade_e grade = (smmGrade_e)(rand() % 9); // 0-8 사이 랜덤 성적 생성
+    smmGrade_e grade;
+    void* gradePtr;
+    
+    grade = rand() % SMMNODE_MAX_GRADE; // 성적 랜덤 생성
+    
+    gradePtr = smmObj_genObject(lectureName, SMMNODE_OBJTYPE_BOARD, SMMNODE_TYPE_LECTURE, credit, 0, grade); // 성적 객체 생성
+    smmdb_addTail(LISTNO_OFFSET_GRADE + player, gradePtr); // 플레이어 성적 리스트에 추가
+    
+    return grade;
 }
+
 void printGrades(int player); //print all the grade history of the player
-#endif
+
 
 void* findGrade(int player, char *lectureName) //find the grade from the player's grade history
 {
@@ -91,6 +102,7 @@ void* findGrade(int player, char *lectureName) //find the grade from the player'
     
     return NULL;
 }
+
 int isGraduated(void) //check if any player is graduated
 {
     int i;
@@ -153,8 +165,6 @@ void generatePlayers(int n, int initEnergy)
 }
 
 
-
-
 int rolldie(int player)
 {
     char c;
@@ -162,14 +172,40 @@ int rolldie(int player)
     c = getchar();
     fflush(stdin);
     
-#if 0
     if (c == 'g')
         printGrades(player);
-#endif
     
     return (rand() % MAX_DIE + 1);
 }
 
+void graduationResult(void)
+{
+    int i, j;
+    
+    for (i=0; i<smm_player_nr; i++)
+    {
+        if (smm_players[i].flag_graduated == 1)
+        {
+            int size = smmdb_len(LISTNO_OFFSET_GRADE + i);
+            
+            printf("Player %d Graduation \n", i);
+            
+            for (j=0; j<size; j++)
+            {
+                void *ptr = smmdb_getData(LISTNO_OFFSET_GRADE + i, j);
+                
+                if(ptr == NULL)
+                    break;
+                
+                char *lectureName = smmObj_getObjectName(ptr);
+                int credit = smmObj_getNodeCredit(ptr);
+                int grade = smmObj_getObjectGrade(ptr);
+                
+                printf("Lecture : %s, Credit: %d, Grade: %d\n", lectureName, credit, grade);
+            }
+        }
+    }
+}
 
 //action code when a player stays at a node
 void actionNode(int player)
@@ -285,7 +321,7 @@ int main(int argc, const char * argv[]) {
     
     srand(time(NULL));
     
-    
+
     //1. import parameters ---------------------------------------------------------------------------------
     //1-1. boardConfig 
     if ((fp = fopen(BOARDFILEPATH,"r")) == NULL)
@@ -366,7 +402,8 @@ int main(int argc, const char * argv[]) {
 
     
     turn = 0;
-    //3. SM Marble game starts ---------------------------------------------------------------------------------
+    
+    //3. SM marble game starts ---------------------------------------------------------------------------------
     while (isGraduated() == 0) //is anybody graduated?
     {
         int die_result;
@@ -387,7 +424,8 @@ int main(int argc, const char * argv[]) {
         //4-5. next turn
         turn = (turn + 1)%smm_player_nr;
     }
-
+    
+    graduationResult();
     free(smm_players);
     
     system("PAUSE");
