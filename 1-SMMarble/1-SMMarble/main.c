@@ -194,15 +194,16 @@ void graduationResult(void)
             {
                 void *ptr = smmdb_getData(LISTNO_OFFSET_GRADE + i, j);
                 
-                if(ptr == NULL)
+                if(ptr == NULL) // 유효한 데이터 없을 때 종료
                     break;
                 
-                char *lectureName = smmObj_getObjectName(ptr);
-                int credit = smmObj_getNodeCredit(ptr);
-                int grade = smmObj_getObjectGrade(ptr);
+                char *lectureName = smmObj_getObjectName(ptr); // 강의 이름 가져오기
+                int credit = smmObj_getNodeCredit(ptr); // 강의 학점 가져오기
+                int grade = smmObj_getObjectGrade(ptr); // 강의 성적 가져오기
                 
-                printf("Lecture : %s, Credit: %d, Grade: %d\n", lectureName, credit, grade);
+                printf("Lecture : %s, Credit: %d, Grade: %d\n", lectureName, credit, grade); // 강의 정보 출력
             }
+            return; // 한 명 졸업하면 바로 게임 종료
         }
     }
 }

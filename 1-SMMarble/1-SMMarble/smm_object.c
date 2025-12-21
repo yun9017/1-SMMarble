@@ -86,18 +86,27 @@ char* smmObj_getObjectName(void *ptr)
 
 int smmObj_getNodeType(void *ptr)
 {
+    if(ptr == NULL) // 유효하지 않은 데이터일 때 포인터 접근 방지
+        return -1;
+    
     smmObj_object_t* objPtr = (smmObj_object_t*)ptr;
     return (objPtr->type);
 }
 
 int smmObj_getNodeCredit(void *ptr)
 {
+    if(ptr == NULL)
+        return -1;
+    
     smmObj_object_t* objPtr = (smmObj_object_t*)ptr;
     return (objPtr->credit);
 }
 
 int smmObj_getObjectEnergy(void *ptr)
 {
+    if(ptr == NULL)
+        return -1;
+    
     smmObj_object_t* objPtr = (smmObj_object_t*)ptr;
     return (objPtr->energy);
 }
